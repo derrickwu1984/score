@@ -9,6 +9,9 @@ class ScorequerySpider(scrapy.Spider):
     allowed_domains = ['www1.nm.zsks.cn']
     start_urls = ['http://www1.nm.zsks.cn/']
     post_url="http://www1.nm.zsks.cn/xxcx/gkcx/lqmaxmin_18.jsp"
+    refer = "http://www.nm.zsks.cn/ptgxzs/xxcx/"
+    host="www1.nm.zsks.cn"
+    user_agent="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
 
     def __init__(self):
         pass
@@ -20,9 +23,9 @@ class ScorequerySpider(scrapy.Spider):
 
     def get_headers(self):
         headers = {
-            'referer': 'http://www.nm.zsks.cn/ptgxzs/xxcx/',
-            'Host':'www1.nm.zsks.cn',
-            'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+            'referer': self.refer,
+            'Host':self.host,
+            'User-Agent':self.user_agent
         }
         return headers
 
