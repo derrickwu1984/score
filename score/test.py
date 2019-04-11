@@ -1354,7 +1354,7 @@ def get_all_table_result():
     </html>
     """
     str3 = """
-        <html>
+    <html>
     <head>
     <title>2018年内蒙古普通高校招生批量投档录取最高分最低分数查询</title>
     </head>
@@ -1561,7 +1561,7 @@ def get_all_table_result():
     </body>
     </html>
         """
-    html = etree.HTML(str3)
+    html = etree.HTML(str)
     kldm = html.xpath("//input[@name='kldm']/@value")[1]
     # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
     kldm_in = ['A', 'B', 'C', 'D']
@@ -1580,56 +1580,62 @@ def get_all_table_result():
         enroll_no = table1_result[i][3]
     # table2 tr 下的td值 每个td生成一个list
     table2_result = html.xpath("//table[2]/tr[position()>1]")
+    logging.warning(html.xpath("//table[2]/tr[position()>1]/td/p/text()"))
     table2_result_len = len(table2_result)
     for i in range(table2_result_len):
-        # print(table2_result[i].xpath("./td/p/text()"))
+        # tables中每个从tr抽取出来的list的长度
+        table2_tr_result_len = len(table2_result[i].xpath("./td/p/text()"))
         # 科类属于 普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D 则有六项指标
         if kldm in kldm_in:
             logging.warning("6")
             # 如有list中只有五项指标，说明缺少"专业代码",那么给专业代码赋值为空
-            if (len(table2_result[i])==5):
+            if (table2_tr_result_len==5):
                 pro_code = ""
-                fill_order_table2 = table2_result[i][0].xpath("./td/p/text()")
-                max_score_table2 = table2_result[i][1].xpath("./td/p/text()")
-                min_score_table2 = table2_result[i][2].xpath("./td/p/text()")
+                fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
+                max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
                 # 最低分位数
-                min_score_order = table2_result[i][3].xpath("./td/p/text()")
-                enroll_no_table2 = table2_result[i][4].xpath("./td/p/text()")
+                min_score_order = table2_result[i].xpath("./td/p/text()")[3]
+                enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
 
             else:
-                pro_code = table2_result[i][0]
-                fill_order_table2 = table2_result[i][1]
-                max_score_table2 = table2_result[i][2]
-                min_score_table2 = table2_result[i][3]
+                pro_code = table2_result[i].xpath("./td/p/text()")[0]
+                fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
+                min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
                 # 最低分位数
-                min_score_order = table2_result[i][4]
-                enroll_no_table2 = table2_result[i][5]
+                min_score_order = table2_result[i].xpath("./td/p/text()")[4]
+                enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[5]
         # 艺术科类返回5项指标
         else:
+            # logging.warning(table2_result[i].xpath("./td/p/text()"))
+            # logging.warning(table2_tr_result_len)
             # 如有list中只有四项指标，说明缺少"专业代码",那么给专业代码赋值为空
             # 最低分位数也赋值为空
-            if (len(table2_result[i])==4):
+            # logging.warning(table2_result[i].xpath("./td/p/text()"))
+            # logging.warning(len(table2_result[i]))
+            if (table2_tr_result_len==4):
                 pro_code = ""
-                fill_order_table2 = table2_result[i][0]
-                max_score_table2 = table2_result[i][1]
-                min_score_table2 = table2_result[i][2]
+                fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
+                max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
                 # 最低分位数
                 min_score_order = ""
-                enroll_no_table2 = table2_result[i][3]
+                enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[3]
             else:
-                pro_code = table2_result[i][0]
-                fill_order_table2 = table2_result[i][1]
-                max_score_table2 = table2_result[i][2]
-                min_score_table2 = table2_result[i][3]
+                pro_code = table2_result[i].xpath("./td/p/text()")[0]
+                fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
+                min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
                 # 最低分位数
                 min_score_order = ""
-                enroll_no_table2 = table2_result[i][4]
+                enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
+        logging.warning(pro_code)
+        logging.warning(fill_order_table2)
+        logging.warning(max_score_table2)
+        logging.warning(min_score_table2)
+        logging.warning(min_score_order)
         logging.warning(enroll_no_table2)
-
-
-
-
-        #     pass
     # 获取tables中的专业名称
     pro_name_result = html.xpath("//table[2]/tr[position()>1]")
     pro_name_result_len = len(pro_name_result)
