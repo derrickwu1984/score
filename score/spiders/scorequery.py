@@ -69,7 +69,7 @@ class ScorequerySpider(scrapy.Spider):
         #                          headers=self.get_headers(), callback=self.parse_fifth, dont_filter=True,
         #                          )
     def parse_third(self, response):
-        logging.warning(response.body.decode("gbk"))
+        # logging.warning(response.body.decode("gbk"))
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
         # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
@@ -117,14 +117,13 @@ class ScorequerySpider(scrapy.Spider):
 
         # table2 tr 下的td值 每个td生成一个list
         table2_result = html.xpath("//table[2]/tr[position()>1]")
-        logging.warning(html.xpath("//table[2]/tr[position()>1]/td/p/text()"))
+        # logging.warning(html.xpath("//table[2]/tr[position()>1]/td/p/text()"))
         table2_result_len = len(table2_result)
         for i in range(table2_result_len):
             # tables中每个从tr抽取出来的list的长度
             table2_tr_result_len = len(table2_result[i].xpath("./td/p/text()"))
             # 科类属于 普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D 则有六项指标
             if kldm in kldm_in:
-                logging.warning("6")
                 # 如有list中只有五项指标，说明缺少"专业代码",那么给专业代码赋值为空
                 if (table2_tr_result_len == 5):
                     pro_code = ""
