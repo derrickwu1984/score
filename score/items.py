@@ -9,7 +9,10 @@ import scrapy
 
 
 class ScoreItem(scrapy.Item):
-    # define the fields for your item here like:
+    order_seq = scrapy.Field()
+    item_subject = scrapy.Field()
+    school_name = scrapy.Field()
+
     fill_order = scrapy.Field()
     max_score = scrapy.Field()
     min_score = scrapy.Field()
