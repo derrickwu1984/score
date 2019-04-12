@@ -69,16 +69,29 @@ class ScorequerySpider(scrapy.Spider):
         #                          headers=self.get_headers(), callback=self.parse_fifth, dont_filter=True,
         #                          )
     def parse_third(self, response):
+        logging.warning(response.body.decode("gbk"))
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
         # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
         kldm_in = ['A', 'B', 'C', 'D']
         # 批次
-        order_seq = html.xpath(".//font[3]/text()")[0].strip()
+        try :
+            order_seq = html.xpath(".//font[2]/text()")[0].strip()
+        except:
+            # order_seq = html.xpath(".//font[3]/text()")[0].strip()
+            order_seq = ""
         # 科类
-        item_subject = html.xpath(".//font[3]/text()")[1].strip()
+        try:
+            item_subject = html.xpath(".//font[2]/text()")[1].strip()
+        except:
+            # item_subject = html.xpath(".//font[3]/text()")[1].strip()
+            item_subject = ""
         # 批次
-        school_name = html.xpath(".//font[3]/text()")[2].strip()
+        try:
+            school_name = html.xpath(".//font[2]/text()")[2].strip()
+        except:
+            # school_name = html.xpath(".//font[3]/text()")[2].strip()
+            school_name = ""
         # table1 tr 下的td值 每个td生成一个list
         table1_result = html.xpath("//table[1]/tr[position()>1]")
         table1_result_len = len(table1_result)
