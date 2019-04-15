@@ -81,10 +81,10 @@ class ScorequerySpider(scrapy.Spider):
         kldm_dict_value = dict_kldm[response.meta['m_kldm']]
         pxfs = dict_pxfs[response.meta['m_pxfs']]
         yxdh = response.meta['m_yxdh']
-        # logging.warning(pcdm)
-        # logging.warning(kldm_dict_value)
-        # logging.warning(pxfs)
-        # logging.warning(yxdh)
+        logging.warning(pcdm)
+        logging.warning(kldm_dict_value)
+        logging.warning(pxfs)
+        logging.warning(yxdh)
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
         # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
@@ -199,6 +199,8 @@ class ScorequerySpider(scrapy.Spider):
                         pro_code = table2_result[i].xpath("./td/p/text()")[0]
                         try:
                             pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
+                            logging.warning(i)
+                            logging.warning(parent_index)
                         except:
                             # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
                             pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
@@ -234,8 +236,8 @@ class ScorequerySpider(scrapy.Spider):
 
     def get_dict_loop(self):
         # 批次字典：order_seq_dict
-        # order_seq_dict = ['1', '2', '3', '4', '6', '7', 'C', 'E']
-        order_seq_dict = ['1']
+        order_seq_dict = ['1', '2', '3', '4', '6', '7', 'C', 'E']
+        # order_seq_dict = ['1']
         # 拿到大小写字母
         letter_list = string.ascii_letters
         # 拿到大写字母
@@ -243,11 +245,11 @@ class ScorequerySpider(scrapy.Spider):
         uppser_str = " ".join(uppser_letter_str)
         item_class_dict = []
         # 科类字典：item_class_dict
-        # item_class_dict = uppser_str.split(" ")
-        # item_class_dict.insert(26, '@')
-        # item_class_dict.insert(27, '0')
-        # item_class_dict.insert(28, '1')
-        item_class_dict=['A']
+        item_class_dict = uppser_str.split(" ")
+        item_class_dict.insert(26, '@')
+        item_class_dict.insert(27, '0')
+        item_class_dict.insert(28, '1')
+        # item_class_dict=['A']
         # 院校排序方式字典
         school_type = ['1']
         list = []

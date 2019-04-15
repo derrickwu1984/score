@@ -28,12 +28,8 @@ class ScorePipeline(object):
         line = []
         # 表1填报次序
         table1_fill_order_len = len(item['enroll_no'])
-        # logging.warning(item['fill_order'])
-        logging.warning(table1_fill_order_len)
-        logging.warning(item['enroll_no'])
         for i in range(len(item['fill_order_table2'])):
             if (i < table1_fill_order_len):
-                logging.warning(i)
                 fill = item['fill_order'][i]
                 max = item['max_score'][i]
                 min = item['min_score'][i]
