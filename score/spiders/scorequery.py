@@ -69,7 +69,22 @@ class ScorequerySpider(scrapy.Spider):
         #                          headers=self.get_headers(), callback=self.parse_fifth, dont_filter=True,
         #                          )
     def parse_third(self, response):
-        # logging.warning(response.body.decode("gbk"))
+        dict_pcdm={'1':'本科提前A','2':'本科提前B','3':'本科一批','4':'本科二批','6':'专科提前','7':'高职高专','C':'本科一批B','E':'本科二批B'}
+        dict_kldm = {'@': '汉授编导', '0': '体育类', '1': '采矿类', 'A': '普通文科', 'B': '普通理科', 'C': '蒙授文科', 'D': '蒙授理科',
+                     'E': '汉授美术','F': '蒙授美术','G': '汉授音乐','H': '蒙授音乐','I': '其他艺术',
+                     'J': '蒙授其他艺术','K': '汉授体育','L': '蒙授体育','M': '计算机类',
+                     'N': '农学类', 'O': '牧医类', 'P': '烹饪类', 'Q': '财会类',
+                     'R': '美工设计类', 'S': '旅游类', 'T': '汽驾类', 'U': '建筑类',
+                     'V': '机电类', 'W': '蒙牧医类', 'X': '化工类', 'Y': '幼师类', 'Z': '医学类'}
+        dict_pxfs = {'1':'院校代号','2':'院校名称'}
+        pcdm = dict_pcdm[response.meta['m_pcdm']]
+        kldm_dict_value = dict_kldm[response.meta['m_kldm']]
+        pxfs = dict_pxfs[response.meta['m_pxfs']]
+        yxdh = response.meta['m_yxdh']
+        logging.warning(pcdm)
+        logging.warning(kldm_dict_value)
+        logging.warning(pxfs)
+        logging.warning(yxdh)
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
         # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
@@ -86,113 +101,137 @@ class ScorequerySpider(scrapy.Spider):
         except:
             # item_subject = html.xpath(".//font[3]/text()")[1].strip()
             item_subject = ""
-        # 批次
+        # 院校
         try:
             school_name = html.xpath(".//font[2]/text()")[2].strip()
         except:
             # school_name = html.xpath(".//font[3]/text()")[2].strip()
             school_name = ""
         # table1 tr 下的td值 每个td生成一个list
-        table1_result = html.xpath("//table[1]/tr[position()>1]")
-        table1_result_len = len(table1_result)
-        scoreItemItemLoader = ItemLoader(item=ScoreItem(), response=response)
-        scoreItemItemLoader.add_value("order_seq",order_seq)
-        scoreItemItemLoader.add_value("item_subject", item_subject)
-        scoreItemItemLoader.add_value("school_name", school_name)
-        for i in range(table1_result_len):
-            # print(table1_result[i].xpath("./td/p/text()"))
-            #     填报次序
-            fill_order = table1_result[i].xpath("./td/p/text()")[0]
-            # 最高分
-            max_score = table1_result[i].xpath("./td/p/text()")[1]
-            # 最低分
-            min_score = table1_result[i].xpath("./td/p/text()")[2]
-            # 录取人数
-            enroll_no = table1_result[i].xpath("./td/p/text()")[3]
+        if item_subject !="":
+            table1_result = html.xpath("//table[1]/tr[position()>1]")
+            table1_result_len = len(table1_result)
+            # N条记录公用一个pro_code/pro_name时，pro_code、pro_name 存在数据的索引地址
+            parent_index = table1_result_len - 1
+            scoreItemItemLoader = ItemLoader(item=ScoreItem(), response=response)
+            scoreItemItemLoader.add_value("order_seq",order_seq)
+            scoreItemItemLoader.add_value("item_subject", item_subject)
+            scoreItemItemLoader.add_value("school_name", school_name)
+            for i in range(table1_result_len):
+                #     填报次序
+                fill_order = table1_result[i].xpath("./td/p/text()")[0]
+                # 最高分
+                max_score = table1_result[i].xpath("./td/p/text()")[1]
+                # 最低分
+                min_score = table1_result[i].xpath("./td/p/text()")[2]
+                # 录取人数
+                enroll_no = table1_result[i].xpath("./td/p/text()")[3]
 
-            scoreItemItemLoader.add_value("fill_order",fill_order)
-            scoreItemItemLoader.add_value("max_score", max_score)
-            scoreItemItemLoader.add_value("min_score", min_score)
-            scoreItemItemLoader.add_value("enroll_no", enroll_no)
+                scoreItemItemLoader.add_value("fill_order",fill_order)
+                scoreItemItemLoader.add_value("max_score", max_score)
+                scoreItemItemLoader.add_value("min_score", min_score)
+                scoreItemItemLoader.add_value("enroll_no", enroll_no)
 
-        # table2 tr 下的td值 每个td生成一个list
-        table2_result = html.xpath("//table[2]/tr[position()>1]")
-        # logging.warning(html.xpath("//table[2]/tr[position()>1]/td/p/text()"))
-        table2_result_len = len(table2_result)
-        for i in range(table2_result_len):
-            # tables中每个从tr抽取出来的list的长度
-            table2_tr_result_len = len(table2_result[i].xpath("./td/p/text()"))
-            # 科类属于 普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D 则有六项指标
-            if kldm in kldm_in:
-                # 如有list中只有五项指标，说明缺少"专业代码",那么给专业代码赋值为空
-                if (table2_tr_result_len == 5):
-                    pro_code = ""
-                    fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
-                    max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
-                    min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
-                    # 最低分位数
-                    min_score_order = table2_result[i].xpath("./td/p/text()")[3]
-                    enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
+            # table2 tr 下的td值 每个td生成一个list
+            table2_result = html.xpath("//table[2]/tr[position()>1]")
+            # logging.warning(html.xpath("//table[2]/tr[position()>1]/td/p/text()"))
+            table2_result_len = len(table2_result)
+            for i in range(table2_result_len):
+                # tables中每个从tr抽取出来的list的长度
+                table2_tr_result_len = len(table2_result[i].xpath("./td/p/text()"))
+                # 科类属于 普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D 则有六项指标
+                if kldm in kldm_in:
+                    # 如有list中只有五项指标，说明缺少"专业代码",那么给专业代码赋值为空
+                    if (table2_tr_result_len == 5):
+                        # 如果第index[i] 数据集中"专业代码"为空，则与index[i-1]公用一个专业代码
+                        pro_code = table2_result[i-parent_index].xpath("./td/p/text()")[0]
+                        try:
+                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
+                        except:
+                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
+                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
+                        max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                        min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
+                        # 最低分位数
+                        min_score_order = table2_result[i].xpath("./td/p/text()")[3]
+                        enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
 
+                    else:
+                        pro_code = table2_result[i].xpath("./td/p/text()")[0]
+                        try:
+                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
+                        except:
+                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
+                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                        max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
+                        min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
+                        # 最低分位数
+                        min_score_order = table2_result[i].xpath("./td/p/text()")[4]
+                        enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[5]
+                # 艺术科类返回5项指标
                 else:
-                    pro_code = table2_result[i].xpath("./td/p/text()")[0]
-                    fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
-                    max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
-                    min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
-                    # 最低分位数
-                    min_score_order = table2_result[i].xpath("./td/p/text()")[4]
-                    enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[5]
-            # 艺术科类返回5项指标
-            else:
-                # logging.warning(table2_result[i].xpath("./td/p/text()"))
-                # logging.warning(table2_tr_result_len)
-                # 如有list中只有四项指标，说明缺少"专业代码",那么给专业代码赋值为空
-                # 最低分位数也赋值为空
-                # logging.warning(table2_result[i].xpath("./td/p/text()"))
-                # logging.warning(len(table2_result[i]))
-                if (table2_tr_result_len == 4):
-                    pro_code = ""
-                    fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
-                    max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
-                    min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
-                    # 最低分位数
-                    min_score_order = ""
-                    enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[3]
-                else:
-                    pro_code = table2_result[i].xpath("./td/p/text()")[0]
-                    fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
-                    max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
-                    min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
-                    # 最低分位数
-                    min_score_order = ""
-                    enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
-            # logging.warning(pro_code)
-            # logging.warning(fill_order_table2)
-            # logging.warning(max_score_table2)
-            # logging.warning(min_score_table2)
-            # logging.warning(min_score_order)
-            # logging.warning(enroll_no_table2)
-            scoreItemItemLoader.add_value("pro_code", pro_code)
-            scoreItemItemLoader.add_value("fill_order_table2", fill_order_table2)
-            scoreItemItemLoader.add_value("max_score_table2", max_score_table2)
-            scoreItemItemLoader.add_value("min_score_table2", min_score_table2)
-            scoreItemItemLoader.add_value("min_score_order", min_score_order)
-            scoreItemItemLoader.add_value("enroll_no_table2", enroll_no_table2)
+                    # logging.warning(table2_result[i].xpath("./td/p/text()"))
+                    # logging.warning(table2_tr_result_len)
+                    # 如有list中只有四项指标，说明缺少"专业代码",那么给专业代码赋值为空
+                    # 最低分位数也赋值为空
+                    # logging.warning(table2_result[i].xpath("./td/p/text()"))
+                    # logging.warning(len(table2_result[i]))
+                    if (table2_tr_result_len == 4):
+                        pro_code = table2_result[i-parent_index].xpath("./td/p/text()")[0]
+                        try:
+                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
+                        except:
+                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
+                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
+                        max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                        min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
+                        # 最低分位数
+                        min_score_order = ""
+                        enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[3]
+                    else:
+                        pro_code = table2_result[i].xpath("./td/p/text()")[0]
+                        try:
+                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
+                        except:
+                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
+                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
+                        max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
+                        min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
+                        # 最低分位数
+                        min_score_order = ""
+                        enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
+
+                scoreItemItemLoader.add_value("pcdm", pcdm)
+                scoreItemItemLoader.add_value("kldm", kldm_dict_value)
+                scoreItemItemLoader.add_value("pxfs", pxfs)
+                scoreItemItemLoader.add_value("yxdh", yxdh)
+
+                scoreItemItemLoader.add_value("pro_code", pro_code)
+                scoreItemItemLoader.add_value("pro_name", pro_name)
+                scoreItemItemLoader.add_value("fill_order_table2", fill_order_table2)
+                scoreItemItemLoader.add_value("max_score_table2", max_score_table2)
+                scoreItemItemLoader.add_value("min_score_table2", min_score_table2)
+                scoreItemItemLoader.add_value("min_score_order", min_score_order)
+                scoreItemItemLoader.add_value("enroll_no_table2", enroll_no_table2)
         # 获取tables中的专业名称
-        pro_name_result = html.xpath("//table[2]/tr[position()>1]")
-        pro_name_result_len = len(pro_name_result)
-        for i in range(pro_name_result_len):
-            pro_name = pro_name_result[i].xpath("./td/p/a/text()")
-            scoreItemItemLoader.add_value("pro_name", pro_name)
-            pass
-        scoreItem = scoreItemItemLoader.load_item()
+        # pro_name_result = html.xpath("//table[2]/tr[position()>1]")
+        # pro_name_result_len = len(pro_name_result)
+        # for i in range(pro_name_result_len):
+        #     pro_name = pro_name_result[i].xpath("./td/p/a/text()")
+        #     scoreItemItemLoader.add_value("pro_name", pro_name)
+        #     pass
+            scoreItem = scoreItemItemLoader.load_item()
 
-        yield scoreItem
+            yield scoreItem
 
     def get_dict_loop(self):
         # 批次字典：order_seq_dict
         # order_seq_dict = ['1', '2', '3', '4', '6', '7', 'C', 'E']
-        order_seq_dict = ['1', '2']
+        order_seq_dict = ['1']
         # 拿到大小写字母
         letter_list = string.ascii_letters
         # 拿到大写字母
@@ -204,9 +243,9 @@ class ScorequerySpider(scrapy.Spider):
         # item_class_dict.insert(26, '@')
         # item_class_dict.insert(27, '0')
         # item_class_dict.insert(28, '1')
-        item_class_dict=['A','B']
+        item_class_dict=['A']
         # 院校排序方式字典
-        school_type = ['1', '2']
+        school_type = ['1']
         list = []
         list_temp = []
         for i in range(len(order_seq_dict)):

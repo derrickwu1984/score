@@ -9,6 +9,11 @@ import scrapy
 
 
 class ScoreItem(scrapy.Item):
+    pcdm = scrapy.Field()
+    kldm = scrapy.Field()
+    pxfs = scrapy.Field()
+    yxdh = scrapy.Field()
+
     order_seq = scrapy.Field()
     item_subject = scrapy.Field()
     school_name = scrapy.Field()
