@@ -81,10 +81,10 @@ class ScorequerySpider(scrapy.Spider):
         kldm_dict_value = dict_kldm[response.meta['m_kldm']]
         pxfs = dict_pxfs[response.meta['m_pxfs']]
         yxdh = response.meta['m_yxdh']
-        logging.warning(pcdm)
-        logging.warning(kldm_dict_value)
-        logging.warning(pxfs)
-        logging.warning(yxdh)
+        # logging.warning(pcdm)
+        # logging.warning(kldm_dict_value)
+        # logging.warning(pxfs)
+        # logging.warning(yxdh)
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
         # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
@@ -117,6 +117,10 @@ class ScorequerySpider(scrapy.Spider):
             scoreItemItemLoader.add_value("order_seq",order_seq)
             scoreItemItemLoader.add_value("item_subject", item_subject)
             scoreItemItemLoader.add_value("school_name", school_name)
+            fill_order_list = []
+            max_score_list =[]
+            min_score_list =[]
+            enroll_no_list = []
             for i in range(table1_result_len):
                 #     填报次序
                 fill_order = table1_result[i].xpath("./td/p/text()")[0]
@@ -129,7 +133,7 @@ class ScorequerySpider(scrapy.Spider):
 
                 scoreItemItemLoader.add_value("fill_order",fill_order)
                 scoreItemItemLoader.add_value("max_score", max_score)
-                scoreItemItemLoader.add_value("min_score", min_score)
+                scoreItemItemLoader.add_value("min_score",min_score)
                 scoreItemItemLoader.add_value("enroll_no", enroll_no)
 
             # table2 tr 下的td值 每个td生成一个list
