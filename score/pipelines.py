@@ -27,26 +27,27 @@ class ScorePipeline(object):
     def process_item(self, item, spider):
         line = []
         # 表1填报次序
-        table1_fill_order_len = len(item['fill_order'])
+        table1_fill_order_len = len(item['enroll_no'])
         # logging.warning(item['fill_order'])
-        # logging.warning(table1_fill_order_len)
-        logging.warning(item['fill_order'])
+        logging.warning(table1_fill_order_len)
+        logging.warning(item['enroll_no'])
         for i in range(len(item['fill_order_table2'])):
             if (i < table1_fill_order_len):
-                item['fill_order'] = item['fill_order'][i]
-                item['max_score'] = item['max_score'][i]
-                item['min_score'] = item['min_score'][i]
-                item['enroll_no'] = item['enroll_no'][i]
+                logging.warning(i)
+                fill = item['fill_order'][i]
+                max = item['max_score'][i]
+                min = item['min_score'][i]
+                enroll = item['enroll_no'][i]
             else:
-                item['fill_order'] = ""
-                item['max_score'] = ""
-                item['min_score'] = ""
-                item['enroll_no'] = ""
+                fill = ""
+                max = ""
+                min = ""
+                enroll = ""
             line = [
                     str(item['pcdm'][i]),str(item['kldm'][i]), str(item['pxfs'][i]),
                     str(item['yxdh'][i]),
-                    str(item['fill_order']), str(item['max_score']), str(item['min_score']),
-                    str(item['enroll_no']),
+                    str(fill), str(max), str(min),
+                    str(enroll),
                     str(item['pro_code'][i]),str(item['pro_name'][i]),
                     str(item['fill_order_table2'][i]),str(item['max_score_table2'][i]), str(item['min_score_table2'][i]),
                     str(item['min_score_order'][i]),str(item['enroll_no_table2'][i])]
