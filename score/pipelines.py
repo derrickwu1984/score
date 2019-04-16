@@ -12,13 +12,13 @@ from openpyxl import load_workbook
 
 
 class ScorePipeline(object):
+    title = 'A'
     def __init__(self):
         self.wb = Workbook()
-        self.ws = self.wb.active
-
-        # self.ws.append(['批次', '科类', '院校名称', '填报次序', '最高分', '最低分', '录取人数',
-        #                 '专业代号', '专业名称', '填报次序', '延期有效期',
-        #                 '最高分', '最低分', '最低分位数','录取人数'])
+        self.wb = load_workbook('D:\\nm.xlsx')
+        self.wb.create_sheet(title=self.title)
+        self.ws = self.wb.get_sheet_by_name(self.title)
+        # self.ws = self.wb.active
         self.ws.append(['选择批次','选择科类','院校排序方式','选择院校',
                         '表1填报次序', '表1最高分', '表1最低分', '表1录取人数',
                         '表2专业代码', '表2专业名称',
@@ -47,10 +47,7 @@ class ScorePipeline(object):
                     str(item['pro_code'][i]),str(item['pro_name'][i]),
                     str(item['fill_order_table2'][i]),str(item['max_score_table2'][i]), str(item['min_score_table2'][i]),
                     str(item['min_score_order'][i]),str(item['enroll_no_table2'][i])]
-
-            # line = [item['order_seq'][0], item['item_subject'][0], item['school_name'][0], item['fill_order'][0],
-            #         item['max_score'][0], item['min_score'][0], item['enroll_no'][0]]
-            self.ws.append(line)  # 将数据以行的形式添加到xlsx中
-            self.wb.save('D:\\nm.xlsx')  # 保存xlsx文件
+            # self.ws.append(line)  # 将数据以行的形式添加到xlsx中
+            # self.wb.save('D:\\nm.xlsx')  # 保存xlsx文件
         return item
 

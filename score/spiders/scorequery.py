@@ -87,25 +87,28 @@ class ScorequerySpider(scrapy.Spider):
         logging.warning(yxdh)
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
-        # 科类标识集合：只有kldm=普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D table2中的最低分位数才有值
-        kldm_in = ['A', 'B', 'C', 'D']
+        # 科类标识集合：只有kldm in
+        # 采矿类,普通文科,普通理科,蒙授文科,蒙授理科,计算机类,农学类,牧医类,财会类,
+        # 美工设计类,旅游类,汽驾类,建筑类,机电类,蒙牧医类,化工类,幼师类,医学类
+        # table2中的最低分位数才有值
+        kldm_in = ['0','1','A', 'B', 'C', 'D', 'M', 'N', 'O', 'Q', 'R', 'S', 'T', 'U', 'W', 'X', 'Y', 'Z']
         # 批次
         try :
             order_seq = html.xpath(".//font[2]/text()")[0].strip()
         except:
-            # order_seq = html.xpath(".//font[3]/text()")[0].strip()
             order_seq = ""
         # 科类
         try:
             item_subject = html.xpath(".//font[2]/text()")[1].strip()
         except:
-            # item_subject = html.xpath(".//font[3]/text()")[1].strip()
-            item_subject = ""
+            try:
+                item_subject = html.xpath(".//font[3]/text()")[1].strip()
+            except:
+                item_subject = ""
         # 院校
         try:
             school_name = html.xpath(".//font[2]/text()")[2].strip()
         except:
-            # school_name = html.xpath(".//font[3]/text()")[2].strip()
             school_name = ""
         # table1 tr 下的td值 每个td生成一个list
         if item_subject !="":
@@ -117,10 +120,6 @@ class ScorequerySpider(scrapy.Spider):
             scoreItemItemLoader.add_value("order_seq",order_seq)
             scoreItemItemLoader.add_value("item_subject", item_subject)
             scoreItemItemLoader.add_value("school_name", school_name)
-            fill_order_list = []
-            max_score_list =[]
-            min_score_list =[]
-            enroll_no_list = []
             for i in range(table1_result_len):
                 #     填报次序
                 fill_order = table1_result[i].xpath("./td/p/text()")[0]
@@ -130,7 +129,6 @@ class ScorequerySpider(scrapy.Spider):
                 min_score = table1_result[i].xpath("./td/p/text()")[2]
                 # 录取人数
                 enroll_no = table1_result[i].xpath("./td/p/text()")[3]
-
                 scoreItemItemLoader.add_value("fill_order",fill_order)
                 scoreItemItemLoader.add_value("max_score", max_score)
                 scoreItemItemLoader.add_value("min_score",min_score)
@@ -138,7 +136,6 @@ class ScorequerySpider(scrapy.Spider):
 
             # table2 tr 下的td值 每个td生成一个list
             table2_result = html.xpath("//table[2]/tr[position()>1]")
-            # logging.warning(html.xpath("//table[2]/tr[position()>1]/td/p/text()"))
             table2_result_len = len(table2_result)
             for i in range(table2_result_len):
                 # tables中每个从tr抽取出来的list的长度
@@ -160,7 +157,6 @@ class ScorequerySpider(scrapy.Spider):
                         # 最低分位数
                         min_score_order = table2_result[i].xpath("./td/p/text()")[3]
                         enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
-
                     else:
                         pro_code = table2_result[i].xpath("./td/p/text()")[0]
                         try:
@@ -176,12 +172,8 @@ class ScorequerySpider(scrapy.Spider):
                         enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[5]
                 # 艺术科类返回5项指标
                 else:
-                    # logging.warning(table2_result[i].xpath("./td/p/text()"))
-                    # logging.warning(table2_tr_result_len)
                     # 如有list中只有四项指标，说明缺少"专业代码",那么给专业代码赋值为空
                     # 最低分位数也赋值为空
-                    # logging.warning(table2_result[i].xpath("./td/p/text()"))
-                    # logging.warning(len(table2_result[i]))
                     if (table2_tr_result_len == 4):
                         pro_code = table2_result[i-parent_index].xpath("./td/p/text()")[0]
                         try:
@@ -199,8 +191,6 @@ class ScorequerySpider(scrapy.Spider):
                         pro_code = table2_result[i].xpath("./td/p/text()")[0]
                         try:
                             pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
-                            logging.warning(i)
-                            logging.warning(parent_index)
                         except:
                             # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
                             pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
@@ -210,12 +200,10 @@ class ScorequerySpider(scrapy.Spider):
                         # 最低分位数
                         min_score_order = ""
                         enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
-
                 scoreItemItemLoader.add_value("pcdm", pcdm)
                 scoreItemItemLoader.add_value("kldm", kldm_dict_value)
                 scoreItemItemLoader.add_value("pxfs", pxfs)
                 scoreItemItemLoader.add_value("yxdh", yxdh)
-
                 scoreItemItemLoader.add_value("pro_code", pro_code)
                 scoreItemItemLoader.add_value("pro_name", pro_name)
                 scoreItemItemLoader.add_value("fill_order_table2", fill_order_table2)
@@ -223,16 +211,8 @@ class ScorequerySpider(scrapy.Spider):
                 scoreItemItemLoader.add_value("min_score_table2", min_score_table2)
                 scoreItemItemLoader.add_value("min_score_order", min_score_order)
                 scoreItemItemLoader.add_value("enroll_no_table2", enroll_no_table2)
-        # 获取tables中的专业名称
-        # pro_name_result = html.xpath("//table[2]/tr[position()>1]")
-        # pro_name_result_len = len(pro_name_result)
-        # for i in range(pro_name_result_len):
-        #     pro_name = pro_name_result[i].xpath("./td/p/a/text()")
-        #     scoreItemItemLoader.add_value("pro_name", pro_name)
-        #     pass
-            scoreItem = scoreItemItemLoader.load_item()
-
-            yield scoreItem
+                scoreItem = scoreItemItemLoader.load_item()
+                yield scoreItem
 
     def get_dict_loop(self):
         # 批次字典：order_seq_dict
@@ -245,11 +225,12 @@ class ScorequerySpider(scrapy.Spider):
         uppser_str = " ".join(uppser_letter_str)
         item_class_dict = []
         # 科类字典：item_class_dict
-        item_class_dict = uppser_str.split(" ")
-        item_class_dict.insert(26, '@')
-        item_class_dict.insert(27, '0')
-        item_class_dict.insert(28, '1')
-        # item_class_dict=['A']
+        # item_class_dict = uppser_str.split(" ")
+        # item_class_dict.insert(26, '@')
+        # item_class_dict.insert(27, '0')
+        # item_class_dict.insert(28, '1')
+        # item_class_dict=['@','0','1']
+        item_class_dict = ['A']
         # 院校排序方式字典
         school_type = ['1']
         list = []
