@@ -81,10 +81,10 @@ class ScorequerySpider(scrapy.Spider):
         kldm_dict_value = dict_kldm[response.meta['m_kldm']]
         pxfs = dict_pxfs[response.meta['m_pxfs']]
         yxdh = response.meta['m_yxdh']
-        logging.warning(pcdm)
-        logging.warning(kldm_dict_value)
-        logging.warning(pxfs)
-        logging.warning(yxdh)
+        # logging.warning(pcdm)
+        # logging.warning(kldm_dict_value)
+        # logging.warning(pxfs)
+        # logging.warning(yxdh)
         html=etree.HTML(response.body.decode("gbk"))
         kldm = html.xpath("//input[@name='kldm']/@value")[1]
         # 科类标识集合：只有kldm in
@@ -140,17 +140,42 @@ class ScorequerySpider(scrapy.Spider):
             for i in range(table2_result_len):
                 # tables中每个从tr抽取出来的list的长度
                 table2_tr_result_len = len(table2_result[i].xpath("./td/p/text()"))
-                # 科类属于 普通文科 A、普通理科 B、蒙授文科 C 、蒙授理科 D 则有六项指标
+                # 科类属于非艺术类则有六项指标
                 if kldm in kldm_in:
-                    # 如有list中只有五项指标，说明缺少"专业代码",那么给专业代码赋值为空
+                    # 如有list中只有五项指标，说明缺少"专业代码","专业名称"
                     if (table2_tr_result_len == 5):
-                        # 如果第index[i] 数据集中"专业代码"为空，则与index[i-1]公用一个专业代码
-                        pro_code = table2_result[i-parent_index].xpath("./td/p/text()")[0]
-                        try:
-                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
-                        except:
-                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
-                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        tr=""
+                        tr_1=""
+                        tr_2 = ""
+                        tr_3 = ""
+                        tr_4 = ""
+                        tr_5 = ""
+                        if i==1:
+                            tr = table2_result[i].xpath("./td/p/text()")
+                            tr_1 = table2_result[i-1].xpath("./td/p/text()")
+                        if i>1:
+                            tr = table2_result[i].xpath("./td/p/text()")
+                            tr_1 = table2_result[i - 1].xpath("./td/p/text()")
+                            tr_2 =table2_result[i-2].xpath("./td/p/text()")
+                        if i>2:
+                            tr_3 = table2_result[i-3].xpath("./td/p/text()")
+                        if i>3:
+                            tr_4 = table2_result[i-4].xpath("./td/p/text()")
+                        if i>4:
+                            tr_5 = table2_result[i-5].xpath("./td/p/text()")
+                        idx = self.locate_index(tr,tr_1,tr_2,tr_3,tr_4,tr_5,5)
+                        logging.warning("-----------")
+                        logging.warning(pcdm)
+                        logging.warning(kldm_dict_value)
+                        logging.warning(pxfs)
+                        logging.warning(yxdh)
+                        logging.warning(tr)
+                        logging.warning(tr_1)
+                        logging.warning(table2_tr_result_len)
+                        logging.warning(i)
+                        logging.warning(idx)
+                        pro_code = table2_result[i - idx].xpath("./td/p/text()")[0]
+                        pro_name = table2_result[i - idx].xpath("./td/p/a/text()")[0]
                         fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
                         max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
                         min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
@@ -158,29 +183,41 @@ class ScorequerySpider(scrapy.Spider):
                         min_score_order = table2_result[i].xpath("./td/p/text()")[3]
                         enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[4]
                     else:
+                        logging.warning("================")
                         pro_code = table2_result[i].xpath("./td/p/text()")[0]
-                        try:
-                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
-                        except:
-                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
-                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
                         fill_order_table2 = table2_result[i].xpath("./td/p/text()")[1]
                         max_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
                         min_score_table2 = table2_result[i].xpath("./td/p/text()")[3]
                         # 最低分位数
                         min_score_order = table2_result[i].xpath("./td/p/text()")[4]
                         enroll_no_table2 = table2_result[i].xpath("./td/p/text()")[5]
-                # 艺术科类返回5项指标
+                # 艺术科类没有最低分位数
                 else:
-                    # 如有list中只有四项指标，说明缺少"专业代码",那么给专业代码赋值为空
-                    # 最低分位数也赋值为空
+                    # 如有list中只有四项指标，说明缺少"专业代码","专业名称"
+                    # 需要调用locate_index，复用有i-idx 索引项的"专业代码","专业名称"
+                    # 最低分位数赋值为空
                     if (table2_tr_result_len == 4):
-                        pro_code = table2_result[i-parent_index].xpath("./td/p/text()")[0]
-                        try:
-                            pro_name = table2_result[i].xpath("./td/p/a/text()")[0]
-                        except:
-                            # 如果有数据集中"专业名称"为空，则与index[i-parent_index]公用一个专业名称
-                            pro_name = table2_result[i-parent_index].xpath("./td/p/a/text()")[0]
+                        tr=""
+                        tr_1=""
+                        tr_2 = ""
+                        tr_3 = ""
+                        tr_4 = ""
+                        tr_5 = ""
+                        if i>1:
+                            tr = table2_result[i].xpath("./td/p/text()")
+                            tr_1 = table2_result[i-1].xpath("./td/p/text()")
+                        if i>2:
+                            tr_2 =table2_result[i-2].xpath("./td/p/text()")
+                        if i>3:
+                            tr_3 = table2_result[i-3].xpath("./td/p/text()")
+                        if i>4:
+                            tr_4 = table2_result[i-4].xpath("./td/p/text()")
+                        if i>5:
+                            tr_5 = table2_result[i-5].xpath("./td/p/text()")
+                        idx = self.locate_index(tr,tr_1,tr_2,tr_3,tr_4,tr_5,4)
+                        pro_code = table2_result[i-idx].xpath("./td/p/text()")[0]
+                        pro_name = table2_result[i-idx].xpath("./td/p/a/text()")[0]
                         fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
                         max_score_table2 = table2_result[i].xpath("./td/p/text()")[1]
                         min_score_table2 = table2_result[i].xpath("./td/p/text()")[2]
@@ -243,6 +280,28 @@ class ScorequerySpider(scrapy.Spider):
         # logging.warning(list)
         # logging.warning(len(list))
         return list
+
+    # 查询结果中会出现N次填报记录复用一条专业代号与专业名称的情况，为此，需要定位pro_code与pro_name的索引
+    # tr:table2 中的tr记录  tr_len：table2的tr记录中复用pro_code与pro_name信息的记录长度只能是4或5
+    # 最多支持五次填报
+    def locate_index(self,tr,tr_1,tr_2,tr_3,tr_4,tr_5,tr_len):
+        idx = 0
+        if (len(tr) < len(tr_1)) and (len(tr_1)==tr_len+1) and len(tr) == tr_len:
+            logging.warning("idx")
+            logging.warning("1")
+            idx = 1
+        if (len(tr) == len(tr_1)) and (len(tr) < len(tr_2)) and (len(tr_2)==tr_len+1) and len(tr) == tr_len:
+            logging.warning("idx")
+            logging.warning("2")
+            idx = 2
+        if (len(tr) == len(tr_1)) and (len(tr) == len(tr_2)) and (len(tr) < len(tr_3)) and (len(tr_3)==tr_len+1) and len(tr) == tr_len:
+            idx = 3
+        if (len(tr) == len(tr_1)) and (len(tr) == len(tr_2)) and (len(tr) == len(tr_3)) and (len(tr) < len(tr_4)) and (len(tr_4)==tr_len+1) and len(tr) == tr_len:
+            idx = 4
+        if (len(tr) == len(tr_1)) and (len(tr) == len(tr_2)) and (len(tr) == len(tr_3)) and (len(tr) == len(tr_4)) and (len(tr) < len(tr_5)) and (len(tr_5)==tr_len+1) and len(tr) == tr_len:
+            idx = 5
+        return idx
+
 
     # 报文格式
     # 第一次下拉请求

@@ -14,7 +14,7 @@ from openpyxl import load_workbook
 class ScorePipeline(object):
     title = 'A'
     def __init__(self):
-        self.wb = Workbook()
+        # self.wb = Workbook()
         self.wb = load_workbook('D:\\nm.xlsx')
         self.wb.create_sheet(title=self.title)
         self.ws = self.wb.get_sheet_by_name(self.title)
@@ -47,7 +47,7 @@ class ScorePipeline(object):
                     str(item['pro_code'][i]),str(item['pro_name'][i]),
                     str(item['fill_order_table2'][i]),str(item['max_score_table2'][i]), str(item['min_score_table2'][i]),
                     str(item['min_score_order'][i]),str(item['enroll_no_table2'][i])]
-            # self.ws.append(line)  # 将数据以行的形式添加到xlsx中
-            # self.wb.save('D:\\nm.xlsx')  # 保存xlsx文件
+            self.ws.append(line)  # 将数据以行的形式添加到xlsx中
+            self.wb.save('D:\\nm.xlsx')  # 保存xlsx文件
         return item
 
