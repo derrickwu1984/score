@@ -31,4 +31,9 @@ class ScoreItem(scrapy.Item):
     enroll_no_table2 = scrapy.Field()
 
     pro_name = scrapy.Field()
+
+    # fill= scrapy.Field()
+    # max= scrapy.Field()
+    # min= scrapy.Field()
+    # enroll= scrapy.Field()
     pass

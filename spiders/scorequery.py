@@ -249,7 +249,7 @@ class ScorequerySpider(scrapy.Spider):
                 scoreItemItemLoader.add_value("min_score_order", min_score_order)
                 scoreItemItemLoader.add_value("enroll_no_table2", enroll_no_table2)
                 scoreItem = scoreItemItemLoader.load_item()
-                yield scoreItem
+            yield scoreItem
 
     def get_dict_loop(self):
         # 批次字典：order_seq_dict
@@ -267,7 +267,7 @@ class ScorequerySpider(scrapy.Spider):
         # item_class_dict.insert(27, '0')
         # item_class_dict.insert(28, '1')
         # item_class_dict=['@','0','1']
-        item_class_dict = ['A']
+        item_class_dict = ['@']
         # 院校排序方式字典
         school_type = ['1']
         list = []
