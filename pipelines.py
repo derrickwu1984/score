@@ -16,7 +16,7 @@ from .items import ScoreItem
 
 
 class ScorePipeline(object):
-    title = '@'
+    title = 'B'
     def __init__(self):
         # self.db = DBHelper()
         # self.wb = Workbook()
@@ -45,7 +45,7 @@ class ScorePipeline(object):
                 min = ""
                 enroll = ""
             line = [
-                    str(item['pcdm'][i]),str(item['kldm'][i]), str(item['pxfs'][i]),
+                    str(item['pcdm'][i]),str(item['kldm'][i]), str(item['school_name']),
                     str(item['yxdh'][i]),
                     str(fill), str(max), str(min),
                     str(enroll),

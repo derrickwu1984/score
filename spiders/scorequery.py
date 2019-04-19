@@ -267,7 +267,7 @@ class ScorequerySpider(scrapy.Spider):
         # item_class_dict.insert(27, '0')
         # item_class_dict.insert(28, '1')
         # item_class_dict=['@','0','1']
-        item_class_dict = ['@']
+        item_class_dict = ['B']
         # 院校排序方式字典
         school_type = ['1']
         list = []
