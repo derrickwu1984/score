@@ -93,23 +93,20 @@ class ScorequerySpider(scrapy.Spider):
         # table2中的最低分位数才有值
         kldm_in = ['0','1','A', 'B', 'C', 'D', 'M', 'N', 'O', 'Q', 'R', 'S', 'T', 'U', 'W', 'X', 'Y', 'Z']
         # 批次
-        try :
-            order_seq = html.xpath(".//font[2]/text()")[0].strip()
-        except:
-            order_seq = ""
-        # 科类
-        try:
-            item_subject = html.xpath(".//font[2]/text()")[1].strip()
-        except:
-            try:
-                item_subject = html.xpath(".//font[3]/text()")[1].strip()
+        if ('（注意：艺术以综合分排序录取，本处文化课排名仅供参考。）' == html.xpath(".//font[2]/text()")[0].strip()):
+            order_seq = html.xpath(".//font[3]/text()")[0].strip()
+            item_subject = html.xpath(".//font[3]/text()")[1].strip()
+            school_name = html.xpath(".//font[3]/text()")[2].strip()
+        else:
+            try :
+                order_seq = html.xpath(".//font[2]/text()")[0].strip()
+                item_subject = html.xpath(".//font[2]/text()")[1].strip()
+                school_name = html.xpath(".//font[2]/text()")[2].strip()
             except:
-                item_subject = ""
-        # 院校
-        try:
-            school_name = html.xpath(".//font[2]/text()")[2].strip()
-        except:
-            school_name = ""
+
+                order_seq = ""
+                item_subject=""
+                school_name=""
         # table1 tr 下的td值 每个td生成一个list
         if item_subject !="":
             table1_result = html.xpath("//table[1]/tr[position()>1]")
@@ -204,18 +201,31 @@ class ScorequerySpider(scrapy.Spider):
                         tr_3 = ""
                         tr_4 = ""
                         tr_5 = ""
-                        if i>1:
+                        if i==1:
                             tr = table2_result[i].xpath("./td/p/text()")
                             tr_1 = table2_result[i-1].xpath("./td/p/text()")
-                        if i>2:
+                        if i>1:
+                            tr = table2_result[i].xpath("./td/p/text()")
+                            tr_1 = table2_result[i - 1].xpath("./td/p/text()")
                             tr_2 =table2_result[i-2].xpath("./td/p/text()")
-                        if i>3:
+                        if i>2:
                             tr_3 = table2_result[i-3].xpath("./td/p/text()")
-                        if i>4:
+                        if i>3:
                             tr_4 = table2_result[i-4].xpath("./td/p/text()")
-                        if i>5:
+                        if i>4:
                             tr_5 = table2_result[i-5].xpath("./td/p/text()")
+
                         idx = self.locate_index(tr,tr_1,tr_2,tr_3,tr_4,tr_5,4)
+                        logging.warning("-----4------")
+                        logging.warning(pcdm)
+                        logging.warning(kldm_dict_value)
+                        logging.warning(pxfs)
+                        logging.warning(yxdh)
+                        logging.warning(tr)
+                        logging.warning(tr_1)
+                        logging.warning(table2_tr_result_len)
+                        logging.warning(i)
+                        logging.warning(idx)
                         pro_code = table2_result[i-idx].xpath("./td/p/text()")[0]
                         pro_name = table2_result[i-idx].xpath("./td/p/a/text()")[0]
                         fill_order_table2 = table2_result[i].xpath("./td/p/text()")[0]
@@ -266,8 +276,8 @@ class ScorequerySpider(scrapy.Spider):
         # item_class_dict.insert(26, '@')
         # item_class_dict.insert(27, '0')
         # item_class_dict.insert(28, '1')
-        # item_class_dict=['@','0','1']
-        item_class_dict = ['B']
+        # item_class_dict=[order_seq'@','0','1']
+        item_class_dict = ['Z']
         # 院校排序方式字典
         school_type = ['1']
         list = []
