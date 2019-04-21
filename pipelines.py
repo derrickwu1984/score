@@ -10,17 +10,17 @@ from openpyxl import Workbook  # 写入Excel表所用
 from openpyxl import load_workbook
 
 
-from score.db.dbhelper import DBHelper
+# from score.db.dbhelper import DBHelper
 from .items import ScoreItem
 
 
 
 class ScorePipeline(object):
-    title = 'B'
+    title = '普通文科'
     def __init__(self):
         # self.db = DBHelper()
         # self.wb = Workbook()
-        self.wb = load_workbook('D:\\nm.xlsx')
+        self.wb = load_workbook('E:\\nm.xlsx')
         self.wb.create_sheet(title=self.title)
         self.ws = self.wb.get_sheet_by_name(self.title)
         # self.ws = self.wb.active
@@ -45,7 +45,7 @@ class ScorePipeline(object):
                 min = ""
                 enroll = ""
             line = [
-                    str(item['pcdm'][i]),str(item['kldm'][i]), str(item['school_name']),
+                    str(item['pcdm'][i]),str(item['kldm'][i]), str(item['school_name'][0]),
                     str(item['yxdh'][i]),
                     str(fill), str(max), str(min),
                     str(enroll),
@@ -55,7 +55,7 @@ class ScorePipeline(object):
             # if (len(item) > 2 and item.__class__ == ScoreItem):
             #     self.db.insert_score(line)
             self.ws.append(line)  # 将数据以行的形式添加到xlsx中
-            self.wb.save('D:\\nm.xlsx')  # 保存xlsx文件
+            self.wb.save('E:\\nm.xlsx')  # 保存xlsx文件
         return item
 
 
